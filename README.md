@@ -15,9 +15,9 @@ The three folders are related with the pipeline of hybrid prediction for a sweet
 
 **2.Scripts**: This folder has the scripts for all three differents cross-validation schemes used:
 
-i. **CV1**: untested hybrids in tested environments.
-ii. **CV0**: tested hybrids in untested environments.
-ii. **CV00**: untested hybrids in untested environments.
+i. **CV1**: untested hybrids in tested environments.  
+ii. **CV0**: tested hybrids in untested environments.  
+ii. **CV00**: untested hybrids in untested environments.  
 
 
 **3.Plot**: This folder contains a script to plot the graphs as an outcome of the analyses.
