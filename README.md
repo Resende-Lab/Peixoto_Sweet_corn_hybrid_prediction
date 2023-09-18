@@ -1,8 +1,6 @@
 # Peixoto_Sweet_Corn_hybrid_prediction
 
-This is a repository with the scripts of the paper: Utilizing Genomic Prediction to Boost Hybrid Performance in a Sweet Corn Breeding Program (Peixoto et al.).
-
-# Still working on it
+This is a repository with the scripts of the paper: Utilizing genomic prediction to boost hybrid performance in a sweet corn breeding program (Peixoto et al.).
 
 ### Specifications
 
@@ -11,6 +9,8 @@ The three folders are related to the pipeline of hybrid prediction for a sweet c
 ### Contents
 
 **1.Datasets**: Contains the phenotypic and the genotypic datasets for running the analyses.
+
+
 
 
 **2.Scripts**: This folder has the scripts for all three different cross-validation schemes used:
