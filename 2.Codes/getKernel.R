@@ -22,10 +22,10 @@
 #'
 #' @param Markers matrix with markers information for all candidate parents,
 #' coded as 0,1,2.
-#' @param method flag for euclidean distance
+#' @param method flag for Euclidean distance
 #' @param h should h be estimated
-#' @param IM_threshold individual missing threshold.
-#' @param MM_threshold markers missing threshold.
+#' @param IM_threshold individual missing threshold
+#' @param MM_threshold markers missing threshold
 #' @param maf_thresh minor allele frequency threshold
 #'
 #' @return RKHS gaussian kernel
@@ -35,14 +35,14 @@
 #' @export
 
 
-getKernel = function(Markers = NULL, method = "euclidian", h = TRUE, IM_threshold = 0.9, MM_threshold = 0.9, maf_thresh = 0.01){
+getKernel = function(Markers = NULL, method = "euclidean", h = TRUE, IM_threshold = 0.9, MM_threshold = 0.9, maf_thresh = 0.01){
   
  
 Markers = missing_data(Markers = Markers,IM_threshold,MM_threshold) 
 
 Markers = maf_filter(Markers = Markers,maf_thresh = maf_thresh)
   
-if(method == "euclidian"){
+if(method == "euclidean"){
   Mat_RKHS<-as.matrix(dist(Markers, method = "euclidean"))^2
   
 }
@@ -52,6 +52,7 @@ Mat_RKHS<-as.matrix(Mat_RKHS/mean(Mat_RKHS))
 if(h = TRUE){
 h=round(1/median(Mat_RKHS[row(Mat_RKHS)>col(Mat_RKHS)]),2)
 h=h*c(5,1,0.2)
+  
 }else{
   h = 0
 }
