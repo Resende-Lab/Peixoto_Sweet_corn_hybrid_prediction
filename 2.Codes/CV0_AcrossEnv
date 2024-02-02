@@ -5,7 +5,7 @@
 ################################################################################
 
 ## ----------------------------------------------------------------
-## ---------- 1.Packages and env
+## ---------- 1. Packages and env
 ## ----------------------------------------------------------------
 rm(list=ls())
 
@@ -20,7 +20,7 @@ setwd("") #*** change it here
 ## ---------- 2. Organizing the phenotypes
 ## ----------------------------------------------------------------
 ##>>----- Reading the BLUP information
-# Data with Hybrid information (first column) environment information (Second 
+# Data with Hybrid information (first column), environment information (Second 
 # column), and three traits: EL, EW, and TPF.
 
 raw_dat0 = read.table("../dataset.txt", h=TRUE) # can be built based on the BLUEs generated
@@ -309,6 +309,8 @@ KGK = getKernel(Markers = Markers_SweetHybrid,
 ## ----------------------------------------------------------------
 K_GK = KGK[[1]]
 K_GKD = KGK[[2]]
+h= KGK[[3]]
+hD = KGK[[4]]
 
 ##>>>---- Creating design matrix for lines
 #matrix
