@@ -1,4 +1,3 @@
-
 #########################################
 #
 # Package: NA
@@ -23,63 +22,64 @@
 #' @param Markers matrix with markers information for all candidate parents,
 #' coded as 0,1,2.
 #' @param method flag for Euclidean distance
-#' @param h should h be estimated
 #' @param IM_threshold individual missing threshold
 #' @param MM_threshold markers missing threshold
 #' @param maf_thresh minor allele frequency threshold
 #'
-#' @return RKHS gaussian kernel
+#' @return RKHS Gaussian kernel
 #'
 #' @author Marco Antonio Peixoto, \email{marco.peixotom@@gmail.com}
 #'
 #' @export
 
 
-getKernel = function(Markers = NULL, method = "euclidean", h = TRUE, IM_threshold = 0.9, MM_threshold = 0.9, maf_thresh = 0.01){
+getKernel = function(Markers = NULL, method = "euclidean", IM_threshold = 0.9, MM_threshold = 0.9, maf_thresh = 0.01){
   
+  cat('Total SNPs', ncol(Markers), '\n')
+  
+  MarkMis = missing_data(Markers = Markers,IM_threshold,MM_threshold) 
+  cat(ncol(Markers)-ncol(MarkMis), 'SNPs dropped due to missing data threshold of',IM_threshold, 'and', MM_threshold, '\n' )
+  
+  MarkMaf = maf_filter(Markers = MarkMis,maf_thresh = maf_thresh)
+  cat(ncol(MarkMis)-ncol(MarkMaf), 'SNPs dropped due to maf threshold of',maf_thresh, '\n' )
+  
+  cat('Total SNPs', ncol(MarkMaf), '\n')
+  
+  if(method == "euclidean"){
+    DistMat <- as.matrix(dist(MarkMaf, method = "euclidean"))^2
+  }
+  
+  
+  DistMat<-as.matrix(DistMat/mean(DistMat))
+  GK = list()
+  
+  h=round(1/median(DistMat[row(DistMat)>col(DistMat)]),2)
+  h=h*c(5,1,0.2)
+    
+    for(i in 1:length(h)){
+      GK[[i]]<-list(K=exp(-h[i]*DistMat), model='RKHS')   
+    }
  
-Markers = missing_data(Markers = Markers,IM_threshold,MM_threshold) 
-
-Markers = maf_filter(Markers = Markers,maf_thresh = maf_thresh)
-  
-if(method == "euclidean"){
-  Mat_RKHS<-as.matrix(dist(Markers, method = "euclidean"))^2
-  
-}
-
-Mat_RKHS<-as.matrix(Mat_RKHS/mean(Mat_RKHS))
-
-if(h == TRUE){
-h=round(1/median(Mat_RKHS[row(Mat_RKHS)>col(Mat_RKHS)]),2)
-h=h*c(5,1,0.2)
-  
-}else{
-  h = 0
-}
-
-return(list(RKHS_mat = Mat_RKHS,
-            h = h))
+  return(list(DistMat = DistMat,
+              h = h,
+              Kernel = GK))
   
 }
 
 
 
 
-missing_data <- function(Markers,IM_threshold,MM_threshold){
- 
-  # Missing
-  Markers = apply(Markers, 2, FUN=function(wna) sapply(wna, function(ina) ifelse(is.na(ina), mean(wna, na.rm=TRUE), ina)))
-  
-  ind.missing <- apply(Markers,1,function(x){
-    return(length(which(is.na(x)))/ncol(Markers))
-  })
+missing_data <- function(Markers, MM_threshold){
   
   marker.missing <- apply(Markers,2,function(x)
   {return(length(which(is.na(x)))/nrow(Markers))
   })
   
-  filtered <- Markers[which(ind.missing<IM_threshold),which(marker.missing<MM_threshold)]
-  return(filtered)
+  filtered <- Markers[,which(marker.missing<MM_threshold)]
+ 
+  MarkFinal = apply(filtered, 2, FUN=function(wna) sapply(wna, function(ina) ifelse(is.na(ina), mean(wna, na.rm=TRUE), ina)))
+  
+  return(MarkFinal)
 }
 
 
@@ -90,10 +90,3 @@ maf_filter<-function(Markers,maf_thresh){
   snps<-Markers[,which(maf>maf_thresh)]
   return(snps)
 }
-
-
-
-
-
-
-
