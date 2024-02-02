@@ -49,7 +49,7 @@ if(method == "euclidean"){
 
 Mat_RKHS<-as.matrix(Mat_RKHS/mean(Mat_RKHS))
 
-if(h = TRUE){
+if(h == TRUE){
 h=round(1/median(Mat_RKHS[row(Mat_RKHS)>col(Mat_RKHS)]),2)
 h=h*c(5,1,0.2)
   
