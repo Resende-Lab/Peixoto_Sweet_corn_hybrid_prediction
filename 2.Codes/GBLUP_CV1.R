@@ -4,7 +4,7 @@
 ################################################################################
 
 ## ----------------------------------------------------------------
-## ---------- 1.Packages and environment
+## ---------- 1. Packages and environment
 ## ----------------------------------------------------------------
 
 rm(list=ls())
@@ -21,7 +21,7 @@ setwd("") #Set work directory
 ## ----------------------------------------------------------------
 
 ##>>-----Reading the BLUP and pedigree information
-BLUP0 = read.table("CA20.txt", h=TRUE) #*** For the other two environments (FL and WIS, just change the dataset)
+BLUP0 = read.table("CA20.txt", h=TRUE) #*** For the other two environments (FL and WIS, change the dataset)
 
 ##>>----- Splitting for later use
 dat0 = BLUP0[,c(2:9)] 
@@ -39,16 +39,33 @@ BLUP1 = BLUP0 %>%
 
 ##>>---------------------------- GBLUP Kernel ---------------------
 
-#Loading matrix
-load("ADMat.Rdata") #Generated through AGHMatrix package
+# Loading SNP matrix
+
+Markers = load("Markers_SweetHybrid") # load the SNP matrix
+
+# Generate relationship matrix using AGHMatrix package
+# Additive
+G_mat <- Gmatrix(Markers,
+                 missingValue = "NA",
+                 integer = FALSE,
+                 thresh.missing = .3,
+                 maf = 0.01)
+
+# Dominance
+D_mat <- Gmatrix(Markers,
+                 missingValue = "NA",
+                 integer = FALSE,
+                 thresh.missing = .3,
+                 maf = 0.01,
+                 method="Vitezica")
 
 # Parents in CA20
 G_ID = as.matrix(BLUP0[,1])
 
-#Cutting the matrix for account only genotypes with 
+#Cutting the matrix for account-only genotypes with 
 #Additive kernel
-K_GB = A_mat[rownames(A_mat)%in%G_ID,
-             colnames(A_mat)%in%G_ID]
+K_GB = A_mat[rownames(G_mat)%in%G_ID,
+             colnames(G_mat)%in%G_ID]
 
 #Dominance kernel
 K_GBD =  D_mat[rownames(D_mat)%in%G_ID,
