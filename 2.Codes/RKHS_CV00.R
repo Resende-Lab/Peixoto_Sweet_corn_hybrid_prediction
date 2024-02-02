@@ -4,7 +4,7 @@
 ################################################################################
 
 ## ----------------------------------------------------------------
-## ---------- 1.Packages and env
+## ---------- 1. Packages and env
 ## ----------------------------------------------------------------
 rm(list=ls())
 
@@ -20,9 +20,9 @@ setwd("") #Set work directory
 ## ----------------------------------------------------------------
 ##------------------2020---------------------------
 
-##>>-----Reading the BLUP: This dataset contains only the individuals not shared in between 2020 and 2021
-##> You can build it up based on the two datasets that are into the main folder
-BLUP20 = read.table("California_20.txt", h=TRUE) #*** For the other two environments (FL and WIS, just change the dataset)
+##>>-----Reading the BLUP: This dataset contains only the individuals not shared between 2020 and 2021
+##> You can build it up based on the two datasets that are in the main folder
+BLUP20 = read.table("California_20.txt", h=TRUE) #*** For the other two environments (FL and WIS, change the dataset)
 
 dat20 = BLUP20
 
@@ -59,22 +59,11 @@ load("Markers_SweetHybrid.Rdata")
 Markers = Markers_SweetHybrid
 
 # For additive and dominance kernels
-K_GB = getKernel(Markers = Markers_SweetHybrid, 
+KGK = getKernel(Markers = Markers_SweetHybrid, 
                  method = "euclidean",
                  GenoID = as.matrix(ID_BG)
                  MM_threshold = 0.3, 
                  maf_thresh = 0.01)
-
-## ----------------------------------------------------------------
-## ---------- 3. Building  the ETA for BGLR and MTM 
-## ----------------------------------------------------------------
-
-
-#---------------------- Creating the ETA for additive effect for STM (GK)
-A.GK <- K_GB[[1]]
-
-# #---------------------- Creating the ETA for additive + dominance effect for STM (GK)
-AD.GK <- K_GB[[2]]
 
 ## ----------------------------------------------------------------
 ## ---------- 4. Bayesian parameters
@@ -91,11 +80,12 @@ p = c(212:(211+39))
 ## ----------------------------------------------------------------
 ## ---------- 5. Creating the incidence matrix and ETA - additive
 ## ----------------------------------------------------------------
-K_GK = DA
-K_GKD = DD
+K_GK = KGK[[1]]
+K_GKD = KGK[[2]]
+h = KGK[[3]]
+hD = KGK[[4]]
 
 ##>>>---- Creating design matrix for lines
-#matrix
 Z_L=model.matrix(~0+IDGen,data=dat0)
 
 #Expanding G for lines additive
