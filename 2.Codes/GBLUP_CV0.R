@@ -49,8 +49,25 @@ dat0 = rbind(dat20.1,dat21.1)
 ## ----------------------------------------------------------------
 
 ##>>---------------------------- Creating A+D matrices ---------------------
-#Loading matrix
-load("ADMat.Rdata") #Generated through AGHMatrix
+# Loading SNP matrix
+
+Markers = load("Markers_SweetHybrid") # load the SNP matrix
+
+# Generate relationship matrix using AGHMatrix package
+# Additive
+G_mat <- Gmatrix(Markers,
+                 missingValue = "NA",
+                 integer = FALSE,
+                 thresh.missing = .3,
+                 maf = 0.01)
+
+# Dominance
+D_mat <- Gmatrix(Markers,
+                 missingValue = "NA",
+                 integer = FALSE,
+                 thresh.missing = .3,
+                 maf = 0.01,
+                 method="Vitezica")
 
 # Parents in BG20
 ID_CA20 = as.matrix(BLUP20[,1])
@@ -63,10 +80,10 @@ ID_CA = rbind(ID_CA20,ID_CA21)
 
 ID_CA = unique(ID_CA)
 
-#Cutting the matrix for account only genotypes with
+#Cutting the matrix for account-only genotypes with
 #Additive kernel
-K_GB = A_mat[rownames(A_mat)%in%ID_CA,
-             colnames(A_mat)%in%ID_CA]
+K_GB = A_mat[rownames(G_mat)%in%ID_CA,
+             colnames(G_mat)%in%ID_CA]
 
 #Dominance kernel
 K_GBD =  D_mat[rownames(D_mat)%in%ID_CA,
