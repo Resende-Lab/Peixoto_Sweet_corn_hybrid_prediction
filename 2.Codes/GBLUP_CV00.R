@@ -50,7 +50,8 @@ dat0 = rbind(dat20,dat21)
 ##>>---------------------------- Creating A+D matrices ---------------------
 # Loading SNP matrix
 
-Markers = load("Markers_SweetHybrid") # load the SNP matrix
+load("Markers_SweetHybrid") # load the SNP matrix
+Markers = Markers_SweetHybrid
 
 # Generate relationship matrix using AGHMatrix package
 # Additive
