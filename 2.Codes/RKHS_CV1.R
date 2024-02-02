@@ -1,10 +1,10 @@
 ################################################################################
 #########                  Model for hybrid prediction
-#########                     Gaussian Kernel
+#########                     Gaussian Kernel - CV1
 ################################################################################
 
 ## ----------------------------------------------------------------
-## ---------- 1.Packages and env
+## ---------- 1. Packages and env
 ## ----------------------------------------------------------------
 
 rm(list=ls())
@@ -36,44 +36,17 @@ BLUP1 = BLUP0 %>%
 ## ----------------------------------------------------------------
 ## ---------- 3. Building  the Kernels
 ## ----------------------------------------------------------------
-#Loading matrix
-load("SNP_RKHS.Rdata") #Full SNP matrix
 
-#---------------------------------------------------------
-# SNP matrix from hybrid data
-SNP_HY = hybridA_RKHS
+# Loading SNP matrix
+load("Markers_SweetHybrid.Rdata")
+Markers = Markers_SweetHybrid
 
-# Parents in CA20
-G_ID = as.matrix(BLUP0[,1])
-
-#Cutting the matrix for account only genotypes with 
-SNP_GKA = SNP_HY[rownames(SNP_HY)%in%G_ID,]
-
-##>>----- DISTANCE MATRIX - Creating the kernel
-DA<-as.matrix(dist(SNP_GKA, method = "euclidean"))^2
-DA<-DA/mean(DA)
-
-#Pérez and de-los-Campos (2014)
-h=round(1/median(DA[row(DA)>col(DA)]),2)
-h=h*c(5,1,0.2)
-
-#------------------------------------------------------------
-# SNP matrix from hybrid data
-SNP_D = hybridD_RKHS
-
-# Parents in CA20
-G_ID = as.matrix(BLUP0[,1])
-
-#Cutting the matrix for account only genotypes with 
-SNP_GKD = SNP_D[rownames(SNP_D)%in%G_ID,]
-
-##>>----- DISTANCE MATRIX - Creating the kernel (Github vignette Package: https://github.com/gdlc/BGLR-R/blob/master/inst/md/RKHS.md)
-DD<-as.matrix(dist(SNP_GKD, method = "euclidean"))^2
-DD<-DD/mean(DD)
-
-#Pérez and de-los-Campos (2014)
-hD=round(1/median(DD[row(DD)>col(DD)]),2)
-hD=hD*c(5,1,0.2)
+# For additive and dominance kernels
+K_GB = getKernel(Markers = Markers_SweetHybrid, 
+                 method = "euclidean",
+                 GenoID = as.matrix(BLUP0[,1])
+                 MM_threshold = 0.3, 
+                 maf_thresh = 0.01)
 
 ## ----------------------------------------------------------------
 ## ---------- 3. Building  the ETA for BGLR and MTM 
@@ -81,24 +54,10 @@ hD=hD*c(5,1,0.2)
 
 
 #---------------------- Creating the ETA for additive effect for STM (GK)
-
-A.GK<-list()
-
-for(i in 1:length(h)){
-  A.GK[[i]]<-list(K=exp(-h[i]*DA),model='RKHS')
-}
-
+A.GK <- K_GB[[1]]
 
 # #---------------------- Creating the ETA for additive + dominance effect for STM (GK)
-
-AD.GK<-list()
-
-AD.GK=list(list(K1 = exp(-h[1]*DA), model='RKHS'),
-           list(K2 = exp(-h[2]*DA), model='RKHS'),
-           list(K3 = exp(-h[3]*DA), model='RKHS'),
-           list(K4 = exp(-hD[1]*DD), model='RKHS'),
-           list(K5 = exp(-hD[2]*DD), model='RKHS'),
-           list(K6 = exp(-hD[3]*DD), model='RKHS'))
+AD.GK <- K_GB[[2]]
 
 
 
