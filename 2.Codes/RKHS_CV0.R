@@ -4,7 +4,7 @@
 ################################################################################
 
 ## ----------------------------------------------------------------
-## ---------- 1.Packages and env
+## ---------- 1. Packages and env
 ## ----------------------------------------------------------------
 rm(list=ls())
 
@@ -48,19 +48,10 @@ dim(dat0)
 ## ---------- 3. Building and loading the Kernels
 ## ----------------------------------------------------------------
 
-#####################################################
-##>>---------------------------- Creating A matrix
-#####################################################
-#Loading matrix
-load("SNP_RKHS.Rdata") #Full SNP matrix #*** Change for other traits and environments
-
-# SNP matrix from hybrid data
-SNP_HY = hybridA_RKHS
-
-# Parents in BG20
+# Hybrids in BG20
 ID_BG20 = as.matrix(BLUP20[,1])
 
-# Parents in BG21
+# Hybrids in BG21
 ID_BG21 = as.matrix(BLUP21[,1])
 
 # Combining BG20+BG21 and unique
@@ -68,46 +59,15 @@ ID_BG = rbind(ID_BG20,ID_BG21)
 
 ID_BG = unique(ID_BG)
 
-#Cutting the matrix for account only genotypes with 
-SNP_GKA = SNP_HY[rownames(SNP_HY)%in%ID_BG,]
+# Loading SNP matrix
+load("Markers_SweetHybrid.Rdata")
 
-
-##>>----- DISTANCE MATRIX - Creating the kernel (Github vignette Package: https://github.com/gdlc/BGLR-R/blob/master/inst/md/RKHS.md)
-DA<-as.matrix(dist(SNP_GKA, method = "euclidean"))^2
-DA<-DA/mean(DA)
-
-#Pérez and de-los-Campos (2014)
-h=round(1/median(DA[row(DA)>col(DA)]),2)
-h=h*c(5,1,0.2)
-
-#####################################################
-##>>---------------------------- Creating D matrix
-#####################################################
-# SNP matrix from hybrid data
-SNP_D = hybridD_RKHS
-
-# Parents in BG20
-ID_BG20 = as.matrix(BLUP20[,1])
-
-# Parents in BG21
-ID_BG21 = as.matrix(BLUP21[,1])
-
-# Combining BG20+BG21 and unique
-ID_BG = rbind(ID_BG20,ID_BG21)
-
-ID_BG = unique(ID_BG)
-
-#Cutting the matrix for account only genotypes with 
-SNP_GKD = SNP_D[rownames(SNP_D)%in%ID_BG,]
-
-##>>----- DISTANCE MATRIX - Creating the kernel
-DD<-as.matrix(dist(SNP_GKD, method = "euclidean"))^2
-DD<-DD/mean(DD)
-
-#Pérez and de-los-Campos (2014)
-hD=round(1/median(DD[row(DD)>col(DD)]),2)
-hD=hD*c(5,1,0.2)
-
+# For additive and dominance kernels
+KGK = getKernel(Markers = Markers_SweetHybrid, 
+                 method = "euclidean",
+                 GenoID = as.matrix(ID_BG)
+                 MM_threshold = 0.3, 
+                 maf_thresh = 0.01)
 
 ## ----------------------------------------------------------------
 ## ---------- 4. Bayesian parameters
@@ -124,8 +84,10 @@ p = c(247:(246+39))
 ## ----------------------------------------------------------------
 ## ---------- 5. Creating the incidence matrix and ETA - additive
 ## ----------------------------------------------------------------
-K_GK = DA
-K_GKD = DD
+K_GK = KGK[[1]]
+K_GKD = KGK[[2]]
+h = KGK[[3]]
+hD = KGK[[4]]
 
 ##>>>---- Creating design matrix for lines
 #matrix
