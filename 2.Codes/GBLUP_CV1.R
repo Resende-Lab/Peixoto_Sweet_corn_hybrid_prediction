@@ -40,8 +40,8 @@ BLUP1 = BLUP0 %>%
 ##>>---------------------------- GBLUP Kernel ---------------------
 
 # Loading SNP matrix
-
-Markers = load("Markers_SweetHybrid") # load the SNP matrix
+load("Markers_SweetHybrid.Rdata")
+Markers = Markers_SweetHybrid
 
 # Generate relationship matrix using AGHMatrix package
 # Additive
@@ -64,7 +64,7 @@ G_ID = as.matrix(BLUP0[,1])
 
 #Cutting the matrix for account-only genotypes with 
 #Additive kernel
-K_GB = A_mat[rownames(G_mat)%in%G_ID,
+K_GB = G_mat[rownames(G_mat)%in%G_ID,
              colnames(G_mat)%in%G_ID]
 
 #Dominance kernel
