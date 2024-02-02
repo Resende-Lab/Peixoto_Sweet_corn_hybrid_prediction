@@ -42,9 +42,9 @@ load("Markers_SweetHybrid.Rdata")
 Markers = Markers_SweetHybrid
 
 # For additive and dominance kernels
-K_GB = getKernel(Markers = Markers_SweetHybrid, 
+KGK = getKernel(Markers = Markers_SweetHybrid, 
                  method = "euclidean",
-                 GenoID = as.matrix(BLUP0[,1])
+                 GenoID = as.matrix(ID_BG)
                  MM_threshold = 0.3, 
                  maf_thresh = 0.01)
 
@@ -52,12 +52,24 @@ K_GB = getKernel(Markers = Markers_SweetHybrid,
 ## ---------- 3. Building  the ETA for BGLR and MTM 
 ## ----------------------------------------------------------------
 
+K_GK = KGK[[1]]
+K_GKD = KGK[[2]]
+h = KGK[[3]]
+hD = KGK[[4]]
 
-#---------------------- Creating the ETA for additive effect for STM (GK)
-A.GK <- K_GB[[1]]
+###>>>---------------- The ETA
 
-# #---------------------- Creating the ETA for additive + dominance effect for STM (GK)
-AD.GK <- K_GB[[2]]
+A.GK=list(list(K1 = exp(-h[1]*K_GK), model='RKHS'),
+          list(K2 = exp(-h[2]*K_GK), model='RKHS'),
+          list(K3 = exp(-h[3]*K_GK), model='RKHS'))
+
+###>>>---- The ETA
+AD.GK=list(list(K1 = exp(-h[1]*K_GK), model='RKHS'),
+           list(K2 = exp(-h[2]*K_GK), model='RKHS'),
+           list(K3 = exp(-h[3]*K_GK), model='RKHS'),
+           list(K4 = exp(-hD[1]*K_GKD), model='RKHS'),
+           list(K5 = exp(-hD[2]*K_GKD), model='RKHS'),
+           list(K6 = exp(-hD[3]*K_GKD), model='RKHS'))
 
 
 
