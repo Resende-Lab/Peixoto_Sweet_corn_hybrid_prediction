@@ -90,12 +90,12 @@ getKernel = function(Markers = NULL, GenoID = NULL, estimateD = FALSE, method = 
   hD=hD*c(5,1,0.2)
   
   } else {
-    MarkMafD = list()
+    DistMat = list()
     hD = list()
   }
   
-  return(list(Kernel_Add = MarkMaf,
-              Kernel_Dom = MarkMafD,
+  return(list(Kernel_Add = DistMat,
+              Kernel_Dom = DistMatD,
               h = h,
               hD = hD))
   
@@ -125,4 +125,6 @@ maf_filter<-function(Markers,maf_thresh){
   snps<-Markers[,which(maf>maf_thresh)]
   return(snps)
 }
+
+
 
