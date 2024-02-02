@@ -14,10 +14,11 @@
 #
 #########################################
 
-#' Prediction of total genetic value for a set of crosses
+#' Estimates the distance matrix based on Euclidian distance and h for a Gaussian kernel.
 #'
 #' @description
-#' Predicts total genetic value for a set of crosses. In this case, we followed the formulae from Falconer and Mackay (1996).
+#'  Estimates the distance matrix based on Euclidian distance and h for a Gaussian kernel. Also, used to filter the raw data for MAF and Missing information.
+#' For more details, please check BGLR package (Pérez-Rodríguez, P, & de Los Campos, G., 2014, 2022)
 #'
 #' @param Markers matrix with markers information for all candidate parents,
 #' coded as 0,1,2.
