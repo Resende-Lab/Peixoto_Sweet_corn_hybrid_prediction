@@ -82,7 +82,7 @@ ID_CA = unique(ID_CA)
 
 #Cutting the matrix for account-only genotypes with
 #Additive kernel
-K_GB = A_mat[rownames(G_mat)%in%ID_CA,
+K_GB = G_mat[rownames(G_mat)%in%ID_CA,
              colnames(G_mat)%in%ID_CA]
 
 #Dominance kernel
