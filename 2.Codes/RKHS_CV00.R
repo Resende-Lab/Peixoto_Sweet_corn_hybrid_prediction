@@ -43,19 +43,10 @@ dat0 = rbind(dat20,dat21)
 ## ---------- 3. Building and loading the Kernels
 ## ----------------------------------------------------------------
 
-#####################################################
-##>>---------------------------- Creating A matrix
-#####################################################
-#Loading matrix
-load("SNP_RKHS.Rdata") #Full SNP matrix 
-
-# SNP matrix from hybrid data
-SNP_HY = hybridA_RKHS
-
-# Parents in BG20
+# Hybrids in BG20
 ID_BG20 = as.matrix(BLUP20[,1])
 
-# Parents in BG21
+# Hybrids in BG21
 ID_BG21 = as.matrix(BLUP21[,1])
 
 # Combining BG20+BG21 and unique
@@ -63,46 +54,27 @@ ID_BG = rbind(ID_BG20,ID_BG21)
 
 ID_BG = unique(ID_BG)
 
-#Cutting the matrix for account only genotypes with 
-SNP_GKA = SNP_HY[rownames(SNP_HY)%in%ID_BG,]
+# Loading SNP matrix
+load("Markers_SweetHybrid.Rdata")
+Markers = Markers_SweetHybrid
+
+# For additive and dominance kernels
+K_GB = getKernel(Markers = Markers_SweetHybrid, 
+                 method = "euclidean",
+                 GenoID = as.matrix(ID_BG)
+                 MM_threshold = 0.3, 
+                 maf_thresh = 0.01)
+
+## ----------------------------------------------------------------
+## ---------- 3. Building  the ETA for BGLR and MTM 
+## ----------------------------------------------------------------
 
 
-##>>----- DISTANCE MATRIX - Creating the kernel (Github vignette Package: https://github.com/gdlc/BGLR-R/blob/master/inst/md/RKHS.md)
-DA<-as.matrix(dist(SNP_GKA, method = "euclidean"))^2
-DA<-DA/mean(DA)
+#---------------------- Creating the ETA for additive effect for STM (GK)
+A.GK <- K_GB[[1]]
 
-#Pérez and de-los-Campos (2014)
-h=round(1/median(DA[row(DA)>col(DA)]),2)
-h=h*c(5,1,0.2)
-
-#####################################################
-##>>---------------------------- Creating D matrix
-#####################################################
-# SNP matrix from hybrid data
-SNP_D = hybridD_RKHS
-
-# Parents in BG20
-ID_BG20 = as.matrix(BLUP20[,1])
-
-# Parents in BG21
-ID_BG21 = as.matrix(BLUP21[,1])
-
-# Combining BG20+BG21 and unique
-ID_BG = rbind(ID_BG20,ID_BG21)
-
-ID_BG = unique(ID_BG)
-
-#Cutting the matrix for account only genotypes with 
-SNP_GKD = SNP_D[rownames(SNP_D)%in%ID_BG,]
-
-##>>----- DISTANCE MATRIX - Creating the kernel
-DD<-as.matrix(dist(SNP_GKD, method = "euclidean"))^2
-DD<-DD/mean(DD)
-
-#Pérez and de-los-Campos (2014)
-hD=round(1/median(DD[row(DD)>col(DD)]),2)
-hD=hD*c(5,1,0.2)
-
+# #---------------------- Creating the ETA for additive + dominance effect for STM (GK)
+AD.GK <- K_GB[[2]]
 
 ## ----------------------------------------------------------------
 ## ---------- 4. Bayesian parameters
