@@ -21,8 +21,9 @@
 #'
 #' @param Markers matrix with markers information for all candidate parents,
 #' coded as 0,1,2.
+#' @param GenoID genotypes IDs for filtering for environments.
+#' @param estimateD  dominance Gaussian kernel should be estimated? Default is FALSE
 #' @param method flag for Euclidean distance
-#' @param IM_threshold individual missing threshold
 #' @param MM_threshold markers missing threshold
 #' @param maf_thresh minor allele frequency threshold
 #'
@@ -33,36 +34,69 @@
 #' @export
 
 
-getKernel = function(Markers = NULL, method = "euclidean", IM_threshold = 0.9, MM_threshold = 0.9, maf_thresh = 0.01){
+getKernel = function(Markers = NULL, GenoID = NULL, estimateD = FALSE, method = "euclidean", MM_threshold = 0.9, maf_thresh = 0.01){
   
   cat('Total SNPs', ncol(Markers), '\n')
   
-  MarkMis = missing_data(Markers = Markers,IM_threshold,MM_threshold) 
-  cat(ncol(Markers)-ncol(MarkMis), 'SNPs dropped due to missing data threshold of',IM_threshold, 'and', MM_threshold, '\n' )
+  MarkMis = missing_data(Markers = Markers,MM_threshold) 
+  cat(ncol(Markers)-ncol(MarkMis), 'SNPs dropped due to missing data threshold of', MM_threshold, '\n' )
   
   MarkMaf = maf_filter(Markers = MarkMis,maf_thresh = maf_thresh)
   cat(ncol(MarkMis)-ncol(MarkMaf), 'SNPs dropped due to maf threshold of',maf_thresh, '\n' )
   
   cat('Total SNPs', ncol(MarkMaf), '\n')
   
+  ##----- Additive
   if(method == "euclidean"){
     DistMat <- as.matrix(dist(MarkMaf, method = "euclidean"))^2
   }
   
-  
   DistMat<-as.matrix(DistMat/mean(DistMat))
-  GK = list()
   
+  if(!is.null(GenoID)){
+    G_ID = as.matrix(GenoID)
+    
+    # Cutting the matrix for account-only genotypes with
+    DistMat = DistMat[rownames(DistMat)%in%G_ID,
+                 colnames(DistMat)%in%G_ID]
+    
+    }
+    
   h=round(1/median(DistMat[row(DistMat)>col(DistMat)]),2)
   h=h*c(5,1,0.2)
     
-    for(i in 1:length(h)){
-      GK[[i]]<-list(K=exp(-h[i]*DistMat), model='RKHS')   
-    }
- 
-  return(list(DistMat = DistMat,
+  if(isTRUE(estimateD)){
+  #------ Dominance
+  MarkMafD = MarkMaf
+  MarkMafD[MarkMafD == 2] <- 0
+  
+  if(method == "euclidean"){
+    DistMatD <- as.matrix(dist(MarkMafD, method = "euclidean"))^2
+  }
+  
+  DistMatD<-as.matrix(DistMatD/mean(DistMatD))
+  
+  if(!is.null(GenoID)){
+    G_ID = as.matrix(GenoID)
+    
+    # Cutting the matrix for account-only genotypes with
+    DistMatD = DistMatD[rownames(DistMatD)%in%G_ID,
+                      colnames(DistMatD)%in%G_ID]
+    
+  }
+  
+  hD=round(1/median(DistMatD[row(DistMatD)>col(DistMatD)]),2)
+  hD=hD*c(5,1,0.2)
+  
+  } else {
+    MarkMafD = list()
+    hD = list()
+  }
+  
+  return(list(Kernel_Add = MarkMaf,
+              Kernel_Dom = MarkMafD,
               h = h,
-              Kernel = GK))
+              hD = hD))
   
 }
 
@@ -90,3 +124,4 @@ maf_filter<-function(Markers,maf_thresh){
   snps<-Markers[,which(maf>maf_thresh)]
   return(snps)
 }
+
